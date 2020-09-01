@@ -39,9 +39,9 @@
         let cards = document.getElementById("cards");
         let form = document.getElementById("form")
         
-        name.innerHTML = `<p>${game.players[game.currentPLayer.index].id}</p>`;
+        name.innerHTML = `<p>${game.players[game.currentPlayer.index].id}</p>`;
         table.innerHTML = JSON.stringify(game.cards.table);
-        cards.innerHTML = JSON.stringify(game.players[game.currentPLayer.index].cards);
+        cards.innerHTML = JSON.stringify(game.players[game.currentPlayer.index].cards);
 
         let doThis = e => {
             e.preventDefault();
@@ -50,17 +50,18 @@
             let formC = form[2].value === "true";
             let formS = form[3].value;
             console.log(game.play(
-                game.players[game.currentPLayer.index].id,
+                game.players[game.currentPlayer.index].id,
                 {
                     index: formI,
                     goToNext: formN,
                     isCardi: formC,
                     suit: formS
                 }
-            ));
-            name.innerHTML = `<p>${game.players[game.currentPLayer.index].id}</p>`;
+            )
+            );
+            name.innerHTML = `<p>${game.players[game.currentPlayer.index].id}</p>`;
             table.innerHTML = JSON.stringify(game.cards.table);
-            cards.innerHTML = JSON.stringify(game.players[game.currentPLayer.index].cards);
+            cards.innerHTML = JSON.stringify(game.players[game.currentPlayer.index].cards);
         }
 
         form.addEventListener("submit",doThis);
