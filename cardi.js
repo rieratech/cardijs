@@ -92,11 +92,6 @@ class Game{
         this.players.push(new Player(playerId, this.id));
         return playerId;
     }
-    getPlayer(playerId){  
-        for(let i = 0; i < this.players.length; i++){
-            if(this.players[i].id === playerId) return this.players[i];
-        }
-    }
     issueCardToPlayer(player){
         player.cards.push(this.cards.deck[this.cards.deck.length - 1]);
         this.cards.deck.splice(this.cards.deck.length - 1, 1);
@@ -120,19 +115,27 @@ class Game{
         this.live = true;
         return this;
     }
-    sendMessage(message){
+    getCurrentPlayer(){
+        return this.players[this.currentPlayer.index];
+    }
+    sendMessage(){
         //to
-        //cardOnTAble
-        //cardi
-        //masterRequested
-        //card matched
-        //points earned
-        //continuous play reward
-    };
+        //card accepted to table - all
+        //numberOfCards issued - all
+        //cards in hand - player
+        //reshuffle - all
+        //cardi - all
+        //masterRequested - all
+        //picks - player
+        //card matched - player
+        //points earned - all
+        //continuous play reward - all
+        //game won -all
+    }
     goToNext(){
         if(!this.currentPlayer.isFree){
             while(this.currentPlayer.picks > 0){
-                this.issueCardToPlayer(this.players[this.currentPlayer.index]);
+                this.issueCardToPlayer(this.getCurrentPlayer());
                 console.log("issue" + this.currentPlayer.picks);
                 this.currentPlayer.picks--;
             }
@@ -154,11 +157,11 @@ class Game{
         return nextPlayerIndex;
     }
     canPlay(playerId){
-        return this.live && (playerId === this.players[this.currentPlayer.index].id);
+        return this.live && (playerId === this.getCurrentPlayer().id);
     }
     callCardi(playerId){
         if(!this.canPlay(playerId)) return this;
-        this.players[this.currentPlayer.index].isCardi = true;
+        this.getCurrentPlayer().isCardi = true;
         this.goToNext();
         return this;
     }
@@ -170,11 +173,11 @@ class Game{
         return this;
     }
     setPlay(attempt, liveCard){
-        this.players[this.currentPlayer.index].isCardi = false;
+        this.getCurrentPlayer().isCardi = false;
         this.currentPlayer.isFree = true;
         this.currentPlayer.playRound += 1;
         this.requestedSuit = "";
-        if(!this.cards.isInGroup(this.cards.noneStarters, attempt.rank) && this.players[this.currentPlayer.index].cards.length < 1 && this.players[this.currentPlayer.index].isCardi){
+        if(!this.cards.isInGroup(this.cards.noneStarters, attempt.rank) && this.getCurrentPlayer().cards.length < 1 && this.getCurrentPlayer().isCardi){
             return 100;
         }
         if(this.cards.isInGroup(this.cards.masterRanks, attempt.rank)){
@@ -221,13 +224,13 @@ class Game{
             this.goToNext();
             return this;
         }
-        let attemptCard = this.players[this.currentPlayer.index].cards[attempt.index];
+        let attemptCard = this.getCurrentPlayer().cards[attempt.index];
         if(!this.cards.match(attemptCard, liveCard, continuousPlay, punish)) {
             return this
         };
         let reward = this.setPlay(attemptCard, liveCard);
-        this.acceptCardFromPlayer(this.players[this.currentPlayer.index], attempt.index);
-        this.players[this.currentPlayer.index].points += (reward + continuousPlayReward);
+        this.acceptCardFromPlayer(this.getCurrentPlayer(), attempt.index);
+        this.getCurrentPlayer().points += (reward + continuousPlayReward);
         if(reward === 100){
             this.live = false;
             return this;
