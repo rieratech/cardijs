@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="player"></div>
+    <div id="table"></div>
+    <div id="cards"></div>
+    <form id="form">
+        <input id="form-i" type="text" placeholder="card index"/>
+        <select id="form-n">
+            <option value="true">true</option>
+            <option value="false" selected>false</option>
+        </select>
+        <select id="form-c">
+            <option value="true">true</option>
+            <option value="false" selected>false</option>
+        </select>
+        <select id="form-s">
+            <option value="DIA" selected></option>>dia</option>
+            <option value="SPD">spd</option>
+            <option value="FLW">flw</option>
+            <option value="HRT">hrt</option>
+        </select>
+        <input type="submit" value="doThis"/>
+    </form>
+    <script src="cardi.js"></script>
+    <script>
+        const game = new Game("game");
+        game.joinGame("dennis");
+        game.joinGame("kamau");
+        game.joinGame("dennis");
+        console.log(game.start());
+        let name = document.getElementById("player");
+        let table = document.getElementById("table");
+        let cards = document.getElementById("cards");
+        let form = document.getElementById("form")
+        
+        name.innerHTML = `<p>${game.players[game.currentPLayer.index].id}</p>`;
+        table.innerHTML = JSON.stringify(game.cards.table);
+        cards.innerHTML = JSON.stringify(game.players[game.currentPLayer.index].cards);
+
+        let doThis = e => {
+            e.preventDefault();
+            let formI = parseInt(form[0].value);
+            let formN = form[1].value === "true";
+            let formC = form[2].value === "true";
+            let formS = form[3].value;
+            console.log(game.play(
+                game.players[game.currentPLayer.index].id,
+                {
+                    index: formI,
+                    goToNext: formN,
+                    isCardi: formC,
+                    suit: formS
+                }
+            ));
+            name.innerHTML = `<p>${game.players[game.currentPLayer.index].id}</p>`;
+            table.innerHTML = JSON.stringify(game.cards.table);
+            cards.innerHTML = JSON.stringify(game.players[game.currentPLayer.index].cards);
+        }
+
+        form.addEventListener("submit",doThis);
+    </script>
+</body>
+</html>
