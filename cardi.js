@@ -217,6 +217,11 @@ class Game{
     }
     play(playerId, attempt){
         if(!this.canPlay(playerId)) return this;
+        if(attempt.goToNext){
+            this.goToNext();
+            return this;
+        }
+        if((this.getCurrentPlayer().cards.length - 1) < attempt.index || attempt.index < 0) return this;
 
         let liveCard = this.cards.table[this.cards.table.length - 1];
         let continuousPlay = this.currentPlayer.playRound > 0;
@@ -229,11 +234,6 @@ class Game{
                 suit: this.requestedSuit
             };
         }
-        if(attempt.goToNext){
-            this.goToNext();
-            return this;
-        }
-        if((this.getCurrentPlayer().cards.length - 1) < attempt.index || attempt.index < 0) return this;
         
         let attemptCard = this.getCurrentPlayer().cards[attempt.index];
         if(!this.cards.match(attemptCard, liveCard, continuousPlay, punish)) {
