@@ -85,8 +85,24 @@ class Game{
         },
         this.skip = 0,
         this.requestedSuit = "",
-        this.round = 0,
+        this.round = -1,
         this.route = 1
+    }
+    sendMessage(cardIssued = {}, reward = 0, comboReward = 0, recycle = false, playRejected = false){
+        let message = {
+            gameIsLive: this.live,
+            gameRound: this.round,
+            currentPlayer: this.getCurrentPlayer().id,
+            cardiAt: this.getCurrentPlayer().cardiAt,
+            cardOnTable: this.cards.table[this.cards.table.length - 1],
+            requestedSuit: this.requestedSuit,
+            cardIssued: cardIssued,
+            reward: reward,
+            comboReward: comboReward,
+            recycle: recycle,
+            playRejected: playRejected
+        }
+        console.log(message);
     }
     joinGame(name){
         if(this.players.length > this.max - 1 || this.live) return;
@@ -99,6 +115,7 @@ class Game{
     }
     issueCardToPlayer(player){
         player.cards.push(this.cards.deck[this.cards.deck.length - 1]);
+        this.sendMessage(this.cards.deck[this.cards.deck.length - 1]);
         this.cards.deck.splice(this.cards.deck.length - 1, 1);
         if(this.cards.deck.length < 1){
             let recycle = this.cards.table.splice(0, this.cards.table.length - 1);
@@ -113,35 +130,21 @@ class Game{
     start(){
         if(this.players < this.min) return;
         this.cards = new Cards().generate().shuffle().firstPlay();
-        for(let i = 0; i < 4; i++){
-            this.players.forEach(player => this.issueCardToPlayer(player))
+        for(let i = 0; i < (4 * this.players.length); i++){
+            this.goToNext(true)
         }
         this.currentPlayer.index = 0;
         this.live = true;
-        return this;
+        this.round += 1;
+        return this.sendMessage();
     }
     getCurrentPlayer(){
         return this.players[this.currentPlayer.index];
     }
-    sendMessage(){
-        //to
-        //card accepted to table - all
-        //numberOfCards issued - all
-        //cards in hand - player
-        //reshuffle - all
-        //cardi - all
-        //masterRequested - all
-        //picks - player
-        //card matched - player
-        //points earned - all
-        //continuous play reward - all
-        //game won -all
-    }
-    goToNext(){
+    goToNext(firstIssue = false){
         if(!this.currentPlayer.isFree){
             while(this.currentPlayer.picks > 0){
                 this.issueCardToPlayer(this.getCurrentPlayer());
-                console.log("issue" + this.currentPlayer.picks);
                 this.currentPlayer.picks--;
             }
             this.currentPlayer.picks = 1;
@@ -153,13 +156,14 @@ class Game{
         while(nextPlayerIndex < 0){
             nextPlayerIndex += this.players.length;
         }
+        if(nextPlayerIndex != this.currentPlayer.index && !firstIssue) this.round += 1;
         if(this.getCurrentPlayer().cardiAt < this.round) this.getCurrentPlayer().cardiAt = -1;
         this.skip = 0;
-        this.round += 1;
         this.currentPlayer.playRound = 0;
         this.currentPlayer.isMaster = false;
         this.currentPlayer.isFree = false;
         this.currentPlayer.index = nextPlayerIndex;
+        this.sendMessage();
         return nextPlayerIndex;
     }
     canPlay(playerId){
@@ -213,7 +217,6 @@ class Game{
     }
     play(playerId, attempt){
         if(!this.canPlay(playerId)) return this;
-        if((this.getCurrentPlayer().cards.length - 1) < attempt.index || attempt.index < 0) return this;
 
         let liveCard = this.cards.table[this.cards.table.length - 1];
         let continuousPlay = this.currentPlayer.playRound > 0;
@@ -230,6 +233,8 @@ class Game{
             this.goToNext();
             return this;
         }
+        if((this.getCurrentPlayer().cards.length - 1) < attempt.index || attempt.index < 0) return this;
+        
         let attemptCard = this.getCurrentPlayer().cards[attempt.index];
         if(!this.cards.match(attemptCard, liveCard, continuousPlay, punish)) {
             return this

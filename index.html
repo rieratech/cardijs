@@ -33,7 +33,7 @@
         game.joinGame("dennis");
         game.joinGame("kamau");
         game.joinGame("dennis");
-        console.log(game.start());
+        game.start();
         let name = document.getElementById("player");
         let table = document.getElementById("table");
         let cards = document.getElementById("cards");
@@ -49,7 +49,7 @@
             let formN = form[1].value === "true";
             let formC = form[2].value === "true";
             let formS = form[3].value;
-            console.log(game.play(
+            game.play(
                 game.players[game.currentPlayer.index].id,
                 {
                     index: formI,
@@ -57,7 +57,6 @@
                     isCardi: formC,
                     suit: formS
                 }
-            )
             );
             name.innerHTML = `<p>${game.players[game.currentPlayer.index].id}</p>`;
             table.innerHTML = JSON.stringify(game.cards.table);
