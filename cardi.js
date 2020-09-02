@@ -1,9 +1,14 @@
+class Bot{
+    constructor(name){
+        this.name = name;
+    }
+}
 class Player{
-    constructor(id, game, cards = [], isCardi =false, points = 0){
+    constructor(id, game, cards = [], cardiAt = -1, points = 0){
         this.id = id,
         this.game = game,
         this.cards = cards,
-        this.isCardi = isCardi,
+        this.cardiAt = cardiAt,
         this.points = points
     }
 }
@@ -148,6 +153,7 @@ class Game{
         while(nextPlayerIndex < 0){
             nextPlayerIndex += this.players.length;
         }
+        if(this.getCurrentPlayer().cardiAt < this.round) this.getCurrentPlayer().cardiAt = -1;
         this.skip = 0;
         this.round += 1;
         this.currentPlayer.playRound = 0;
@@ -161,7 +167,7 @@ class Game{
     }
     callCardi(playerId){
         if(!this.canPlay(playerId)) return this;
-        this.getCurrentPlayer().isCardi = true;
+        this.getCurrentPlayer().cardiAt = this.round;
         this.goToNext();
         return this;
     }
@@ -173,11 +179,10 @@ class Game{
         return this;
     }
     setPlay(attempt, liveCard){
-        this.getCurrentPlayer().isCardi = false;
         this.currentPlayer.isFree = true;
         this.currentPlayer.playRound += 1;
         this.requestedSuit = "";
-        if(!this.cards.isInGroup(this.cards.noneStarters, attempt.rank) && this.getCurrentPlayer().cards.length < 1 && this.getCurrentPlayer().isCardi){
+        if(!this.cards.isInGroup(this.cards.noneStarters, attempt.rank) && this.getCurrentPlayer().cards.length < 1 && this.getCurrentPlayer().cardiAt > -1){
             return 100;
         }
         if(this.cards.isInGroup(this.cards.masterRanks, attempt.rank)){
@@ -208,6 +213,7 @@ class Game{
     }
     play(playerId, attempt){
         if(!this.canPlay(playerId)) return this;
+        if((this.getCurrentPlayer().cards.length - 1) < attempt.index || attempt.index < 0) return this;
 
         let liveCard = this.cards.table[this.cards.table.length - 1];
         let continuousPlay = this.currentPlayer.playRound > 0;
